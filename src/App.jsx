@@ -16,6 +16,8 @@ const App = () => {
             easing: 'ease-in-out',
             once: true, mirror: false
         });
+
+        window.scrollTo(0, 0);
     }, []);
 
     useEffect(() => {
