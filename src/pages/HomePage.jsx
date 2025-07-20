@@ -1,5 +1,4 @@
 import { Fragment, useState, useEffect, useRef } from 'react';
-import Banner from '../Components/Banner';
 import AboutUs from './AboutUs';
 import PeoplePriorities from './PeoplePriorities';
 import Resources from './Resources';
@@ -7,6 +6,7 @@ import Awards from './Awards';
 import WorkAtOccams from '../components/WorkAtOccams';
 import { GiShare } from 'react-icons/gi';
 import { GoBookmark } from 'react-icons/go';
+import Banner from '../components/Banner';
 
 const tabs = [
     { label: 'The HCMI North Star', id: 'about' },

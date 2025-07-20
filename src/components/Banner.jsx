@@ -5,7 +5,7 @@ const Banner = () => {
         <section style={{ backgroundImage: `url(/assets/banner.svg)` }} className='h-screen bg-cover 
             bg-no-repeat lg:bg-[90%] md:bg-center sm:bg-center bg-[80%] flex items-center'
         >
-            <div className='lg:px-14 md:px-8 px-7 py-4 lg:mt-12 md:mt-10 mt-10' 
+            <div className='lg:px-14 md:px-8 px-7 py-4 lg:mt-12 md:mt-10 mt-10'
                 data-aos="zoom-in-right"
             >
                 <div className='flex flex-col md:flex-row md:items-start gap-4 
