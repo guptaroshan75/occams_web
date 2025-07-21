@@ -1,136 +1,146 @@
-import { Fragment, useState, useEffect, useRef } from 'react';
-import AboutUs from './AboutUs';
-import PeoplePriorities from './PeoplePriorities';
-import Resources from './Resources';
-import Awards from './Awards';
-import WorkAtOccams from '../components/WorkAtOccams';
-import { GiShare } from 'react-icons/gi';
-import { GoBookmark } from 'react-icons/go';
-import Banner from '../components/Banner';
+import { Fragment, useState, useEffect, useRef } from "react";
+import AboutUs from "./AboutUs";
+import PeoplePriorities from "./PeoplePriorities";
+import Resources from "./Resources";
+import Awards from "./Awards";
+import WorkAtOccams from "../components/WorkAtOccams";
+import { GiShare } from "react-icons/gi";
+import { GoBookmark } from "react-icons/go";
+import Banner from "../components/Banner";
 
 const tabs = [
-    { label: 'The HCMI North Star', id: 'about' },
-    { label: 'Our people priorities', id: 'priorities' },
-    { label: 'The occams edge', id: 'resources' },
-    { label: 'Working at Occams', id: 'working' },
+    { label: "The HCMI North Star", id: "about" },
+    { label: "Our people priorities", id: "priorities" },
+    { label: "The occams edge", id: "resources" },
+    { label: "Working at Occams", id: "working" },
 ];
 
 const HomePage = () => {
-    const [activeTab, setActiveTab] = useState(tabs[0].id);
-    const [isTabBarSticky, setIsTabBarSticky] = useState(false);
-    const tabBarRef = useRef(null);
-    const tabBarOffsetRef = useRef(null);
-    const navbarHeight = 80;
-    const tabBarHeight = 50;
+    const [activeSection, setActiveSection] = useState(tabs[0].id);
+    const [isSticky, setIsSticky] = useState(false);
+    const observerTarget = useRef(null);
+    const tabRefs = useRef({});
+    // const scrollContainerRef = useRef(null);
 
-    useEffect(() => {
-        const observers = tabs.map(tab => {
-            const el = document.getElementById(tab.id);
-            if (!el) return null;
-
-            const observer = new IntersectionObserver(
-                entries => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            setActiveTab(tab.id);
-                        }
-                    })
-                },
-                {
-                    rootMargin: `-${navbarHeight + tabBarHeight + 10}px 0px 0px 0px`,
-                    threshold: 0,
-                }
-            );
-
-            observer.observe(el);
-            return observer;
-        });
-
-        return () => {
-            observers.forEach(observer => observer?.disconnect());
-        };
-    }, []);
-
-    useEffect(() => {
-        const measureOffset = () => {
-            if (tabBarRef.current) {
-                tabBarOffsetRef.current = tabBarRef.current.offsetTop;
-            }
-        };
-
-        measureOffset();
-        window.addEventListener('resize', measureOffset);
-
-        const handleScroll = () => {
-            const scrollY = window.scrollY;
-            const stickyOffset = tabBarOffsetRef.current || 0;
-            setIsTabBarSticky(scrollY >= stickyOffset - navbarHeight);
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', measureOffset);
-        };
-    }, []);
-
-    useEffect(() => {
-        const activeBtn = document.querySelector(`[data-tab-id='${activeTab}']`);
-        if (activeBtn) {
-            activeBtn.scrollIntoView({
-                behavior: 'smooth',
-                inline: 'center',
-                block: 'nearest',
-            });
-        }
-    }, [activeTab]);
-
-    const scrollTo = (id) => {
-        const element = document.getElementById(id);
-        const yOffset = -(navbarHeight + tabBarHeight - 10);
-        if (element) {
-            const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            window.scrollTo({ top: y, behavior: 'smooth' });
+    const scrollToSection = (id) => {
+        const section = document.getElementById(id);
+        const offset = observerTarget.current?.offsetHeight || 0;
+        if (section) {
+            const y =
+                section.getBoundingClientRect().top + window.scrollY - offset - 10;
+            window.scrollTo({ top: y, behavior: "smooth" });
         }
     };
+
+    useEffect(() => {
+        const sectionIds = tabs.map((tab) => tab.id);
+
+        const handleScroll = () => {
+            const scrollPosition = window.scrollY + 160;
+            let currentSection = sectionIds[0];
+
+            for (const id of sectionIds) {
+                const element = document.getElementById(id);
+                if (element && scrollPosition >= element.offsetTop) {
+                    currentSection = id;
+                }
+            }
+
+            setActiveSection(currentSection);
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsSticky(!entry.isIntersecting);
+            },
+            { root: null, threshold: 0 }
+        );
+
+        const current = observerTarget.current;
+        if (current) observer.observe(current);
+
+        return () => {
+            if (current) observer.unobserve(current);
+        };
+    }, []);
+
+    // useEffect(() => {
+    //     const observer = new IntersectionObserver(
+    //         ([entry]) => {
+    //             setIsSticky(!entry.isIntersecting);
+    //         },
+    //         { threshold: 0 }
+    //     );
+
+    //     const current = observerTarget.current;
+    //     if (current) observer.observe(current);
+    //     return () => current && observer.unobserve(current);
+    // }, []);
+
+    // Center the active tab
+
+    useEffect(() => {
+        const tabRef = tabRefs.current[activeSection];
+        if (tabRef && typeof tabRef.scrollIntoView === "function") {
+            tabRef.scrollIntoView({
+                behavior: "smooth",
+                inline: "center",
+                block: "nearest",
+            });
+        }
+    }, [activeSection]);
+
+    // useEffect(() => {
+    //     const tabRef = tabRefs.current[activeSection];
+    //     const container = scrollContainerRef.current;
+    //     if (tabRef && container) {
+    //         const tabLeft = tabRef.offsetLeft;
+    //         const tabWidth = tabRef.offsetWidth;
+    //         const containerWidth = container.offsetWidth;
+    //         const scrollLeft = tabLeft - containerWidth / 2 + tabWidth / 2;
+
+    //         container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+    //     }
+    // }, [activeSection]);
 
     return (
         <Fragment>
             <Banner />
 
-            <div ref={tabBarRef} className={`w-full transition-all duration-200 ${isTabBarSticky ?
-                'fixed top-0 md:top-[80px] z-40 bg-white shadow-md border-b border-[#A6A6A6]' : ''}`}
+            <div ref={observerTarget} className="h-[1px]"></div>
+
+            <div className={`w-full z-40 transition-all duration-200 ${isSticky ? `sticky lg:top-[5.2rem] md:top-[4.3rem] top-0 
+                bg-white shadow-md` : ""}`}
             >
-                <div className="w-full bg-white border-b border-[#A6A6A6]">
-                    <div className="mx-auto lg:px-14 md:px-8 px-7 flex justify-between">
-                        <div className="flex overflow-x-auto whitespace-nowrap gap-5 py-3 
-                            scroll-smooth no-scrollbar" data-aos="zoom-in-up"
-                        >
-                            {tabs.map((tab, index) => (
-                                <button key={index} data-tab-id={tab.id} onClick={() => scrollTo(tab.id)}
-                                    className={`relative text-sm md:text-base py-1 cursor-pointer 
-                                        ${activeTab === tab.id ? 'font-semibold text-black' : ''}`}
-                                >
-                                    {tab.label}
+                <div className="lg:px-14 md:px-8 px-7 flex justify-between items-center border-b border-[#A6A6A6]">
+                    <div className="flex overflow-x-auto no-scrollbar scroll-smooth gap-5 py-3 relative w-full"
+                        data-aos="zoom-in-up"
+                    >
+                        {tabs.map((tab) => (
+                            <button key={tab.id} ref={(el) => (tabRefs.current[tab.id] = el)} onClick={() => scrollToSection(tab.id)}
+                                className={`relative text-sm md:text-base whitespace-nowrap transition-all duration-200 px-2 py-1 
+                                    ${activeSection === tab.id ? "text-theme-2 font-semibold" : ""}`}
+                            >
+                                {tab.label}
 
-                                    {activeTab === tab.id && (
-                                        <span className="absolute left-0 -bottom-3 w-full h-1 
-                                            rounded-full bg-[#F36B21]"
-                                        />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
+                                {activeSection === tab.id && (
+                                    <span className="absolute -bottom-3 left-0 right-0 h-[3px] bg-[#F36B21] rounded-full" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
 
-                        <div className="hidden md:flex items-center gap-4 text-lg">
-                            <GiShare />
-                            <GoBookmark />
-                        </div>
+                    <div className="hidden md:flex items-center gap-4 text-lg ml-4 shrink-0">
+                        <GiShare />
+                        <GoBookmark />
                     </div>
                 </div>
             </div>
-
-            {isTabBarSticky && <div style={{ height: `${tabBarHeight}px` }} />}
 
             <div id="about">
                 <AboutUs />
