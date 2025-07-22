@@ -13,7 +13,7 @@ const Navbar = ({ isScrolled }) => {
     };
 
     return (
-        <nav className={`md:fixed w-full z-50 ${isScrolled ? `fixed bg-[#fff] border-b 
+        <nav className={`md:fixed w-full z-40 ${isScrolled ? `fixed bg-[#fff] border-b 
             border-[#D3D3D3] lg:shadow-sm md:shadow-sm shadow-none` : 'absolute'}`}
         >
             <div className="mx-auto lg:px-14 md:px-8 px-7 py-4">
